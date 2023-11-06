@@ -1,0 +1,281 @@
+---
+title: "Integrasi Numerik"
+author: "Ummul Auliyah Syam"
+date: "2023-11-06"
+output: html_document
+---
+
+# Metode Integrasi Numerik 
+
+## Metode Trapezoidal 
+
+```{r}
+trapezoid <- function(ftn, a, b, n = 100) {
+   h <- (b-a)/n
+   x.vec <- seq(a, b, by = h)
+   f.vec <- sapply(x.vec, ftn)     # ftn(x.vec)
+   Trap <- h*(f.vec[1]/2 + sum(f.vec[2:n]) + f.vec[n+1]/2)
+   return(Trap)
+}
+```
+
+## Metode Simpson
+
+```{r}
+simpson_n <- function(ftn, a, b, n = 100) {
+  n <- max(c(2*(n %/% 2), 4))
+  h <- (b-a)/n
+  x.vec1 <- seq(a+h, b-h, by = 2*h)     # ganjil
+  x.vec2 <- seq(a+2*h, b-2*h, by = 2*h) # genap
+  f.vec1 <- sapply(x.vec1, ftn)     # ganjil
+  f.vec2 <- sapply(x.vec2, ftn) # genap
+  S <- h/3*(ftn(a) + ftn(b) + 4*sum(f.vec1) + 2*sum(f.vec2))
+  return(S)
+}
+```
+
+## Metode Gauss Quadrature
+
+```{r}
+library(pracma)
+```
+
+```{r}
+# untuk n=2
+gaussLegendre(n=2,a=-1,b=1)
+```
+```{r}
+# untuk n=3
+gaussLegendre(n=3,a=-1,b=1)
+```
+```{r}
+# untuk n=4
+gaussLegendre(n=4,a=-1,b=1)
+```
+```{r}
+# untuk n=5
+gaussLegendre(n=5,a=-1,b=1)
+```
+```{r}
+# untuk n=6
+gaussLegendre(n=6,a=-1,b=1)
+```
+
+```{r}
+# untuk n=7
+gaussLegendre(n=7,a=-1,b=1)
+```
+## Metode Integral Monte Carlo 
+
+```{r}
+mc_integral <- function(ftn, a, b,m=1000){
+  #Membangkitkan x berdistribusi U(a,b)
+  x <- runif(m,a,b)
+  # Menghitung rata-rata dari output fungsi
+  Gx <- ftn(x)
+  Gx_m <- mean(Gx)
+  theta.hat <- (b-a)*Gx_m
+  return(theta.hat)
+}
+```
+
+# Soal dan Pembahasan 
+
+## Soal 1
+
+a. Hitunglah menggunakan R dengan user-defined function 
+
+Definisikan fungsi $f(x)$
+
+```{r}
+f <- function(x){1/x}
+```
+
+Menghitung integral menggunakan fungsi `trapezoid`
+
+```{r}
+trapezoid(f, 1, 5, n = 4)
+```
+b. Hitunglah menggunakan R fungsi `trapzfun` dari package `pracma`
+
+```{r}
+trapzfun(f, 1, 5, maxit =  4)
+```
+c. Hitunglah menggunakan R hingga hasil integral mendekati hasil exactnya dengan toleransi $0.0005$
+
+```{r}
+exact_value=1.609
+tol <-  0.0005
+err <- 1
+n = 4
+
+while(err>tol){
+  res_trap <- trapezoid(f,1,5,n = n)
+  err <- abs(res_trap-exact_value)
+  cat("n=",n,", result=",res_trap,", error=",err,"\n",sep = "")
+  
+  n=n+1
+  if(n==1000){
+    break
+  }
+  
+}
+```
+## Soal 2
+
+a. Hitunglah tanpa menggunakan software
+
+b. Hitunglah menggunakan R
+
+Definisikan fungsi $f(x)$
+
+```{r}
+f2 <- function(x){3^{x}}
+```
+
+```{r}
+simpson_n(f2,-2,2,n = 4)
+```
+b. Hitunglah menggunakan R hingga hasil integral mendekati hasil exact-nya dengan toleransi $0.0001$
+
+```{r}
+exact_value=8.091
+tol <-  0.0001
+err <- 1
+n = 4
+
+while(err>tol){
+  res_simp <- simpson_n(f2,-2,2,n = n)
+  err <- abs(res_simp-exact_value)
+  cat("n=",n,", result=",res_simp,", error=",err,"\n",sep = "")
+  
+  n=n+1
+  if(n==1000){
+    break
+  }
+  
+}
+```
+## Soal 3
+
+Gunakan metode four-point gaussian quadratur untuk mengintegralkan fungsi berikut
+
+a. Hitunglah tanpa menggunakan software
+
+b. Hitunglah menggunakan R dengan fungsi gaussLegendre dengan menggunakan domain $[−1,1]$
+
+Mendefinisikan fungsi hasil transformasi $f(t)$
+
+```{r}
+ft <- function(t){(3/2)*exp((-(3/2*(t+1))^2))}
+```
+
+Legendre order 4
+
+```{r}
+gL <- gaussLegendre(n = 4,a = -1,1)
+```
+
+mendefinisikan koefisien dan gauss point
+
+```{r}
+Ci <- gL$w # koefisien
+Ci
+```
+```{r}
+xi <- gL$x # gauss point
+xi
+```
+Menghitung integral
+
+```{r}
+I <- sum(Ci * ft(xi))
+I
+```
+c. Hitunglah menggunakan R dengan fungsi `gaussLegendre` dengan menggunakan domain asal
+
+Mendefinisikan fungsi $f(x)$
+
+```{r}
+f3 <- function(x){exp(-(x^2))}
+```
+
+Legendre order 4 dengan domain $[0,3]$
+
+```{r}
+gL <- gaussLegendre(n = 4,a = 0,3)
+```
+
+Mendefinisikan koefisien dan gauss point
+
+```{r}
+Ci <- gL$w # koefisien
+Ci
+```
+```{r}
+xi <- gL$x # gauss point
+xi
+```
+Menghitung integral
+
+```{r}
+I <- sum(Ci * f3(xi))
+I
+```
+d. Hitunglah menggunakan R hingga hasil integral mendekati hasil exact-nya dengan toleransi $0.00001$
+
+```{r}
+exact_value=0.886207
+tol <-  0.00001
+err <- 1
+n = 4
+
+while(err>tol){
+  
+  gL <- gaussLegendre(n = n,a = 0,3)
+
+ Ci <- gL$w # koefisien
+ xi <- gL$x # gauss point
+  
+  res_gl <- sum(Ci * f3(xi))
+
+  err <- abs(res_gl-exact_value)
+  
+  cat("n=",n,", result=",res_gl,", error=",err,"\n",sep = "")
+  
+  n=n+1
+  if(n==1000){
+    break
+  }
+  
+}
+```
+## Soal 4
+
+```{r}
+g1 <- function(s) {(1/(5*sqrt(2*pi)))*exp(-(1/2)*(((1/s)-30)/5)^(2))*(1/(s^2))}
+```
+
+```{r}
+g2 <- function(x) {
+  (1/(5*sqrt(2*pi)))*exp(-(1/2)*((x-30)/5)^(2))
+}
+```
+
+```{r}
+set.seed(123)
+int_g1 <- mc_integral(g1,a=-1,b=0,m = 1000)
+int_g1
+```
+```{r}
+set.seed(123)
+int_g2 <- mc_integral(g2,a=-1,b=32,m = 1000)
+int_g2
+
+```
+```{r}
+int_g <- int_g1 + int_g2
+int_g
+```
+
+
